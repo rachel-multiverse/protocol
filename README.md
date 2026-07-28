@@ -27,11 +27,13 @@ Conformance means your messages are right. The fixtures in
 specs/fixtures/rubp-messages-v1.json
 ```
 
-**Use this copy, do not vendor your own.** Five client repositories carry a
-copy of that file today and every one of them has already drifted from it —
-identical in length, differing in a single card byte, which is the kind of
-drift nothing notices until two machines disagree mid-game. That is why this
-repository exists.
+**Use this copy, do not vendor your own.** The file currently exists in four
+places — here, `rachel-ios`, `rachel-server`, and five of the sixteen client
+repositories. The golden vectors in all of them are byte-identical, so
+nothing is broken today; what has diverged is everything around them. One
+copy carries a test case the others lack, and one carries a typo in a
+human-readable label. Four copies of a contract stay in agreement only for
+as long as nobody edits one.
 
 ## Why this is a repository of its own
 
