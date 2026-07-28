@@ -11,6 +11,13 @@ with it.
 
 ## If you are writing a client
 
+Start with **[CLIENT_GUIDE.md](CLIENT_GUIDE.md)** — how to get these bytes in
+and out of a machine with a 3.5MHz CPU and a serial port: WiFi adapters and
+their AT dialects, the client state machine, display and input on constrained
+hardware, and testing against an emulator. It deliberately does not repeat the
+wire format; that is here.
+
+
 **You are not expected to implement the rules.** The host owns the deck, the
 rules and the shuffle; a client renders what it is told and sends back what
 its player pressed. That is what keeps the rules identical across machines —
