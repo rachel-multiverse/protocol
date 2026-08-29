@@ -290,7 +290,9 @@ reserved so any client can announce itself honestly without colliding.
 0x009C: NEC PC-88             0x009D: NEC PC-98            0x009E: FM Towns
 0x009F: Oric-1/Atmos          0x00A0: Dragon 32/64         0x00A1: Jupiter ACE
 0x00A2: SAM Coupé             0x00A3: Tatung Einstein      0x00A4: Memotech MTX
-0x00A5: Camputers Lynx (the other one!)
+0x00A5: Camputers Lynx (the other one!)                    0x00A6: Acorn Electron
+
+0x00D7: Atari 7800
 
 0x00F0: Smart TV              0x00F1: Smart Fridge         0x00F2: Tesla
 0x00F3: Smart Watch           0x00F4: Steam Deck           0x00F5: Analogue Pocket
