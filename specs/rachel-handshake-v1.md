@@ -27,6 +27,11 @@ Session establishment has three outcomes:
 `HELLO` is the client request. `WELCOME` is only sent when the host accepts the
 handshake.
 
+Payload capability byte assignments used by RachelSync remain backwards
+compatible because they occupy previously reserved bytes. Capability bit
+`0x01` at HELLO byte 36 is echoed at WELCOME byte 8 and PLAYER_LIST byte 47;
+see `rachel-sync-v1.md` for its acknowledgement semantics.
+
 ## Fresh Join
 
 Fresh join means:

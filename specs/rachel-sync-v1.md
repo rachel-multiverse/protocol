@@ -42,6 +42,26 @@ The public/private pair must also satisfy:
 
 There are two v1 recovery modes.
 
+## Negotiated Slow-Client Acknowledgement
+
+Clients that cannot reliably buffer consecutive 64-byte frames may negotiate
+flow control without changing the RachelSpec version:
+
+- `HELLO` payload byte 36 capability bit `0x01` advertises sync-ACK support.
+- `WELCOME` payload byte 8 and `PLAYER_LIST` payload byte 47 repeat the host's
+  support bit. Repetition lets a client recover if WELCOME is lost.
+- After parsing a matching `GAME_STATE + HAND_SYNC` pair, the client sends a
+  `SYNC_REQUEST` with flags `0x03`: bit `0x01` says the hash is present and bit
+  `0x02` identifies the message as an acknowledgement.
+- The acknowledgement echoes the pair's `turnNumber`, `specVersion`, and
+  `observedStateHash` in the ordinary SYNC_REQUEST fields.
+- A host that negotiated the capability must not send `TURN_START` until a
+  matching acknowledgement arrives. It retransmits the pair after a bounded
+  timeout and discards actions received before the matching acknowledgement.
+
+Peers that do not advertise the capability retain the original v1 behavior.
+An ACK flag sent without negotiation is treated as an ordinary resync request.
+
 ### Explicit Resync
 
 Used when a client detects drift and asks the host to resend the authoritative
