@@ -1,4 +1,4 @@
-# RUBP Protocol Specification v1
+# RUBP Protocol Specification
 
 **Rachel Unified Binary Protocol** — Cross-platform multiplayer protocol for Rachel card game.
 
@@ -94,13 +94,42 @@ Every RUBP message is exactly 64 bytes:
 ```
 Offset  Size  Field         Description
 0       4     Magic         "RACH" (0x52, 0x41, 0x43, 0x48)
-4       1     Version       Protocol version (0x01)
+4       1     Version       Transport version (0x01 legacy, 0x02 CRC)
 5       1     Type          Message type (see below)
 6       2     Sequence      Message sequence number (big-endian)
 8       2     PlayerID      Sender player ID (0xFFFF for host)
 10      2     GameID        Game identifier
-12      4     Timestamp     Unix timestamp or 0 (big-endian)
+12      4     v1 Timestamp  Unix timestamp or 0 (big-endian)
 ```
+
+### RUBP v2 integrity header
+
+RUBP v2 preserves the 16-byte header, 48-byte payload, and every payload
+layout. Only header bytes 12-15 change:
+
+```
+Offset  Size  Field         Description
+12      2     Timestamp16   Low 16 timestamp bits, or 0 (big-endian)
+14      2     CRC16         CRC-16/CCITT-FALSE (big-endian)
+```
+
+The CRC parameters are `poly=0x1021`, `init=0xFFFF`, `refin=false`,
+`refout=false`, `xorout=0x0000`; `"123456789"` produces `0x29B1`. Compute it
+over all 64 bytes with bytes 14-15 set to zero. A receiver must reject a v2
+frame whose CRC does not match before interpreting its type, identifiers,
+payload, state hash, or game-over flag.
+
+The transport version is negotiated by the client's HELLO header. A host that
+successfully decodes a v1 HELLO replies to that connection in v1; a v2 HELLO
+selects v2 for every reply on that connection. Selection is per connection, so
+v1 and v2 clients may share a lobby. RachelSpec `specVersion` in message
+payloads is independent of this transport version.
+
+CRC detects corruption but does not itself recover a lost frame. A client
+already holding an assigned identity uses `SYNC_REQUEST` to obtain a fresh
+`GAME_STATE` and `HAND_SYNC`. Slow software-UART platforms should additionally
+advertise or document their required inter-frame idle interval; the reference
+server currently spaces VIC-20 frames by at least 70 ms.
 
 ### Message Types
 
@@ -838,6 +867,14 @@ This protocol has minimal security (vintage machines cannot handle crypto).
 ---
 
 ## Changelog
+
+### RUBP v2 — CRC-protected transport
+
+- Added CRC-16/CCITT-FALSE in header bytes 14-15.
+- Reduced the optional transport timestamp to its low 16 bits in v2.
+- Kept the 64-byte frame, 48-byte payload, message types, and payload layouts.
+- Defined per-connection v1/v2 selection from the HELLO header.
+- Required CRC validation before any v2 frame content is trusted.
 
 ### Reconciled against the `rachel-ios` reference
 
