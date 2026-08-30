@@ -10,6 +10,8 @@ with it.
   the protocol refers to, plus the shared conformance fixtures.
 - **[`specs/rubp-transport-v1.json`](specs/rubp-transport-v1.json)** — the
   machine-readable endpoint contract: raw TCP on port 6502, TLS on port 443.
+- **[HARDWARE_TESTING.md](HARDWARE_TESTING.md)** — evidence levels, the shared
+  smoke test, and the result template for community hardware verification.
 
 ## If you are writing a client
 
