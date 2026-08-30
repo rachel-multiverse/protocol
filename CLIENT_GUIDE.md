@@ -166,6 +166,10 @@ data is framed:
 | **ESP-AT** | ESP8266 "AT" firmware (ZX, CPC, many builds) | `AT+CIPSTART="TCP","host",port` | `+IPD,<n>:<bytes>` frames, in command mode | `AT+CIPSEND=<n>`, then `n` raw bytes |
 | **Hayes / Zimodem** | Commodore WiFi modems — WiFi232, Zimodem (C64) | `ATDT host:port` | **transparent**: raw bytes, no framing | **transparent**: write raw bytes straight to the line |
 
+The canonical Rachel server endpoint is raw TCP port **6502**. Modern clients
+may use TLS on port **443**. Port 8765 appeared in early client scaffolding and
+is not a Rachel service endpoint.
+
 With ESP-AT you stay in command mode the whole session and unwrap each `+IPD`
 frame (always `+IPD,64:` for RUBP). With Hayes/Zimodem the link goes
 **transparent** after `CONNECT`: read and write 64-byte RUBP messages directly,

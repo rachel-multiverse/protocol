@@ -8,6 +8,8 @@ with it.
   assembly. Start here.
 - **[specs/](specs/)** — the frozen handshake, sync and transition contracts
   the protocol refers to, plus the shared conformance fixtures.
+- **[`specs/rubp-transport-v1.json`](specs/rubp-transport-v1.json)** — the
+  machine-readable endpoint contract: raw TCP on port 6502, TLS on port 443.
 
 ## If you are writing a client
 

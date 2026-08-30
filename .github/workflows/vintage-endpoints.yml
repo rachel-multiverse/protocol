@@ -1,0 +1,37 @@
+name: Vintage endpoint contract
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  endpoint-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: {path: protocol}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-commodore-amiga, path: fleet/rachel-commodore-amiga}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-acorn-bbc, path: fleet/rachel-acorn-bbc}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-coleco-colecovision, path: fleet/rachel-coleco-colecovision}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-dragon-32, path: fleet/rachel-dragon-32}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-acorn-electron, path: fleet/rachel-acorn-electron}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-nintendo-gameboy, path: fleet/rachel-nintendo-gameboy}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-nintendo-nes, path: fleet/rachel-nintendo-nes}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-sega-gamegear, path: fleet/rachel-sega-gamegear}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-sega-mastersystem, path: fleet/rachel-sega-mastersystem}
+      - uses: actions/checkout@v6
+        with: {repository: rachel-multiverse/rachel-commodore-vic20, path: fleet/rachel-commodore-vic20}
+      - run: python3 protocol/tools/check-vintage-endpoints.py --root fleet

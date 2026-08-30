@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "raw_tcp": {
+    "default_port": 6502,
+    "tls_port": 443,
+    "frame_bytes": 64
+  },
+  "serial_modems": {
+    "esp_at": "AT+CIPSTART=\"TCP\",\"host\",6502",
+    "hayes": "ATDhost:6502"
+  }
+}
