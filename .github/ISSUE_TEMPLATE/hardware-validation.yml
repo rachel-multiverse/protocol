@@ -1,0 +1,54 @@
+name: Vintage hardware validation
+description: Report a Rachel client smoke test on a real vintage machine
+title: "Hardware validation: [machine / adapter]"
+labels: [hardware-validation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing Rachel on real hardware. Do not include WiFi passwords, public IP addresses, session tokens, or private server logs.
+  - type: input
+    id: platform
+    attributes:
+      label: Machine and revision
+      placeholder: e.g. Oric Atmos, Issue 4 motherboard
+    validations:
+      required: true
+  - type: input
+    id: adapter
+    attributes:
+      label: Network adapter and firmware
+      placeholder: Hardware revision, firmware name and version
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: Client repository and commit
+      placeholder: rachel-oric @ abc1234
+    validations:
+      required: true
+  - type: input
+    id: server
+    attributes:
+      label: Server commit or version
+      placeholder: rachel-server @ abc1234
+    validations:
+      required: true
+  - type: checkboxes
+    id: results
+    attributes:
+      label: Smoke-test results
+      options:
+        - label: Client booted and accepted the server address
+        - label: HELLO / WELCOME completed
+        - label: GAME_START and GAME_STATE rendered correctly
+        - label: A play or draw action completed
+        - label: A complete game reached PLAYER_WON
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and notes
+      description: Attach safe photos, serial/logic traces, errors, and exact reproduction steps.
+    validations:
+      required: true
