@@ -16,6 +16,12 @@ draft.
 - Parseable in Z80/6502/68000 assembly with minimal code
 - Big-endian byte order (network standard)
 - Implementable with <2KB of protocol handling code on 8-bit systems
+- Two to eight players, identified by stable seat indexes `0` through `7`
+
+Eight is a protocol limit, not merely a host default. The public state reserves
+eight card counts and finish positions, and represents eliminated seats in one
+eight-bit mask. A host must reject a ninth admission rather than truncate a
+player list or start a game whose state cannot be represented on every client.
 
 ### Clients render, the host decides
 
