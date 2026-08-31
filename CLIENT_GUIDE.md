@@ -106,6 +106,41 @@ broadcast, send `SYNC_REQUEST` and wait for fresh public/private state before
 acting. On `ERROR`, clear selection, show a concise reason where possible and
 request authoritative state rather than retrying a stale action blindly.
 
+### Acknowledge what you received, not what you were told
+
+A client that advertises `CAP_SYNC_ACK` is not sent `TURN_START` until it
+returns a `SYNC_REQUEST` whose `ObservedStateHash` matches. That is what stops
+a slow serial client acting before the state it should act on has arrived, and
+it only works if the acknowledgement means what the host assumes.
+
+The trap is that the state hash appears in more than one message. `GAME_STATE`,
+`HAND_SYNC` and `TURN_START` all carry it. If you keep one `state_hash`
+variable, let each handler overwrite it, and send the acknowledgement when
+`HAND_SYNC` arrives, then a discarded `GAME_STATE` is still acknowledged: you
+return a perfectly current hash for a view you never received. The host takes
+you at your word and releases `TURN_START`, and you act a turn behind.
+
+It surfaces on whichever fields only one message carries. The top discard comes
+from `GAME_STATE` alone, so it goes stale while the pending draw and skip
+counts — which `TURN_START` also carries — stay correct. The result is a client
+that knows an attack is live and counters against the wrong card.
+
+**Record that you processed the message carrying the state you will act on, and
+gate the acknowledgement on that flag.** When it is not set, send a plain
+`SYNC_REQUEST` instead: the host answers by resending the public/private pair,
+which costs a round trip rather than waiting out its timeout.
+
+Do not treat this as an edge case. Frame loss is the ordinary condition of a
+bit-banged UART on a machine that also has to draw a screen — the VIC-20 client
+discards 37 to 74 frames in a game it completes cleanly, and hit this path
+seven to nine times per ten-play game. The acknowledgement is the one place
+where losing a frame is silent rather than self-correcting, because you have
+told the host the opposite.
+
+The general form is worth carrying into any handshake you add: an
+acknowledgement must attest to the thing you are about to act on, not merely
+that something arrived.
+
 ## Transport choices
 
 Choose hardware that exists for the target and document the exact adapter,
