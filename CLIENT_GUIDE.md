@@ -2,6 +2,10 @@
 
 This document describes how to build a Rachel client for any retro platform.
 
+For a port intended to include offline rules, AI, persistence, robust recovery,
+release packaging and physical-hardware evidence—not merely render an online
+server game—continue with [COMPLETE_CLIENT_PORT.md](COMPLETE_CLIENT_PORT.md).
+
 ## Overview
 
 A Rachel client connects to the rachel-server over TCP, uses the RUBP (Rachel Unified Binary Protocol) for all communication, and presents a card game UI appropriate to the platform's capabilities.
@@ -198,7 +202,7 @@ net_close       ; Disconnect
 
 The adapter typically handles TCP. The client provides:
 - Server IP address (user input or hardcoded)
-- Port: 19840 (Rachel default)
+- Port: 6502 (canonical raw RUBP endpoint)
 
 ## Display
 

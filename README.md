@@ -21,6 +21,12 @@ their AT dialects, the client state machine, display and input on constrained
 hardware, and testing against an emulator. It deliberately does not repeat the
 wire format; that is here.
 
+If the port will also provide offline solo play, local AI, persistence,
+reconnect recovery or a supported physical release, use
+**[COMPLETE_CLIENT_PORT.md](COMPLETE_CLIENT_PORT.md)**. It records the complete
+implementation order and the rules, transport, memory, UI, timing and evidence
+edge cases exposed by the VIC-20 reference port.
+
 
 **You are not expected to implement the rules.** The host owns the deck, the
 rules and the shuffle; a client renders what it is told and sends back what

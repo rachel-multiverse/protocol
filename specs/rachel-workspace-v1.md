@@ -140,8 +140,8 @@ It is the smallest serious workspace profile currently frozen in the repo.
 It makes three aggressive but defensible choices:
 
 - deck order is kept in a packed `39`-byte card-ordinal stream
-- only the top discard card is resident; discard-under-top membership is
-  derived from deck order plus hand masks
+- only the top discard card has a dedicated resident field; buried discards
+  share the packed storage after the live-deck boundary
 - finish order keeps only the single finisher slot needed for a `2`-player game
 
 Offsets:
@@ -209,11 +209,13 @@ For `constrained_2p_v2`, the card strategy is different:
 - the ordinal mapping is the same as the hand-mask mapping:
   `suit * 13 + (rank - 2)`
 - `topDiscard` stores only the current top card as a normal encoded byte
-- discard-under-top order is intentionally not stored
+- buried discards follow the live deck in chronological order
 
-That last point is safe because Rachel reshuffles the discard-under-top cards
-back into the deck using a deterministic shuffle; only membership matters, not
-their historical discard order.
+The boundary is `deckCount`; `discardCount - 1` ordinals immediately after the
+live deck are the buried discard pile. Preserving their chronology matters:
+when the live deck is exhausted, the canonical deterministic shuffle consumes
+that exact ordered sequence. Treating it as an unordered membership set can
+produce a different deck, PRNG progression and replay on another platform.
 
 ### Hand Masks
 
@@ -265,15 +267,11 @@ It deliberately excludes:
 - commentary state
 - transport metadata
 
-The compact constrained 2-player layout also excludes explicit discard-under-top
-storage. A host reconstructs that membership as:
-
-1. all `52` cards
-2. minus packed deck contents
-3. minus both player hand masks
-4. minus `topDiscard`
-
-Those exclusions are what keep the resident layout sane for small machines.
+The compact constrained 2-player layout excludes a separate discard array, but
+not discard order. The packed area is interpreted as the live deck prefix
+followed by `discardCount - 1` buried discards. The top discard remains at
+offset `61`. Sharing that storage is what keeps the resident layout sane for
+small machines without sacrificing deterministic recycling.
 
 ## Scratch Budget
 

@@ -678,7 +678,7 @@ No conversion needed.
 
 ### TCP (Recommended for Vintage)
 
-- Port: 19840 (1984 + 0)
+- Port: 6502 (canonical raw RUBP endpoint)
 - Bonjour/mDNS service type: `_rachel._tcp`
 - **TCP framing required** — TCP is a byte stream, use 64-byte message boundaries
 - Unencrypted (TLS not viable for vintage hardware)
@@ -686,17 +686,17 @@ No conversion needed.
 
 #### TCP Connection Handshake
 
-After TCP connect, both parties exchange transport-level HELLO messages before game traffic:
+After TCP connect, the client begins the game-layer handshake:
 
 ```
-Client → Host:  HELLO (type 0x01) with display name in payload bytes 0-15
-Host → Client:  HELLO (type 0x01) with display name in payload bytes 0-15
-                (connection established, game-layer messages can flow)
+Client → Host:  HELLO (type 0x01), including display name and reclaim metadata
+Host → Client:  WELCOME (type 0x02), assigning or reclaiming the player slot
 ```
 
 If HELLO is not received within 5 seconds, the connection is closed.
 
-Once the TCP transport is established, the normal game-layer initial sync still begins with the client sending a HELLO to claim or reclaim a player slot.
+The exact initial and reconnect sequences are frozen in
+[specs/rachel-handshake-v1.md](specs/rachel-handshake-v1.md).
 
 #### Display Name Requirements
 
@@ -712,7 +712,7 @@ Hosts advertise via mDNS:
 ```
 Service Type: _rachel._tcp
 Service Name: <user-chosen game name>
-Port: 19840
+Port: 6502
 ```
 
 ESP8266/ESP32 WiFi bridges support mDNS, enabling vintage machine discovery.
@@ -817,7 +817,7 @@ This protocol has minimal security (vintage machines cannot handle crypto).
 ## Implementation Checklist
 
 ### Host Implementation
-- [ ] Listen on port 19840
+- [ ] Listen on port 6502
 - [ ] Advertise via mDNS
 - [ ] Handle HELLO → assign/reclaim slot → send WELCOME
 - [ ] Broadcast PLAYER_LIST on join
@@ -855,7 +855,7 @@ This protocol has minimal security (vintage machines cannot handle crypto).
 │  Message: 64 bytes (16 header + 48 payload)                     │
 │  Byte order: Big-endian                                         │
 │  Magic: "RACH" (0x52 0x41 0x43 0x48)                            │
-│  Port: 19840                                                    │
+│  Port: 6502                                                     │
 │  mDNS: _rachel._tcp                                             │
 ├─────────────────────────────────────────────────────────────────┤
 │  Card encoding (1 byte):                                        │

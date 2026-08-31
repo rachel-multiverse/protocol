@@ -11,7 +11,7 @@ Two processes, two repos, one socket.
 **1. Start the Go server** (`rachel-server`):
 
 ```bash
-go run . serve --addr 127.0.0.1:19840 --min-players 1 --ai-players 1 --auto-start 1s -v
+go run . serve --addr 127.0.0.1:6502 --min-players 1 --ai-players 1 --auto-start 1s -v
 ```
 
 One human slot plus one AI, so a single client triggers a full game.
@@ -19,7 +19,7 @@ One human slot plus one AI, so a single client triggers a full game.
 **2. Run the Swift reference client** (`rachel-ios`):
 
 ```bash
-swift run RachelInteropClient --addr 127.0.0.1:19840 --name SwiftBot
+swift run RachelInteropClient --addr 127.0.0.1:6502 --name SwiftBot
 ```
 
 `RachelInteropClient` speaks RUBP using the `RachelEngine` reference codec over a
