@@ -244,7 +244,9 @@ Offset  Size  Field           Description
 16      2     PlatformID      Client platform (see below)
 18      2     SpecVersion     RachelSpec version supported by client
 20      8     ReconnectToken  Stable token for reclaiming a slot (0 = none)
-28      20    Reserved        Zero-filled
+28      8     RoomCode        Optional ASCII room code, null-padded
+36      1     Capabilities    Bit 0: SYNC_REQUEST acknowledgement extension
+37      11    Reserved        Zero-filled
 ```
 
 The HELLO header `GameID` is `0` for a fresh join and the active game ID when reclaiming a disconnected slot.
