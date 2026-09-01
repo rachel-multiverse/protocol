@@ -95,6 +95,29 @@ Accumulate exactly one frame, synchronize on `RACH`, then validate version and
 CRC before dispatch. Never render or mutate live state from a partially
 validated frame.
 
+**Synchronize on every frame, not just the first.** Reading a fixed 64 bytes
+and trusting the stream to stay aligned works right up until it doesn't, and
+then it never works again: a single byte lost or gained shifts every frame that
+follows for the rest of the session. The host carries on talking correctly and
+the client parses nothing, which reads like a dead link rather than a framing
+fault. The C64 client shipped this way and its symptom was a receive buffer
+holding `43 48 01 0f` — `RACH` short by two bytes, and no way back.
+Rescanning for the magic costs nothing on a clean stream and recovers by
+itself on a dirty one.
+
+**Do not require the next frame to be the one you are waiting for.** During the
+handshake a host may send an announcement or a player list before `WELCOME`;
+nothing in the protocol promises otherwise. Skip frames you are not waiting for
+and keep reading, bounded by a frame count so a silent host still fails. A
+client that treats the first frame it sees as fatal if it is the wrong type has
+made itself depend on message ordering the protocol never guaranteed.
+
+**On a bit-banged link, hold the interrupt mask across a whole frame.** Masking
+per byte leaves every inter-byte gap open. A 64-byte frame at 2400 baud takes
+about a quarter of a second, which is fifteen or more jiffy interrupts, and one
+arriving mid-start-bit corrupts the byte and — without magic resynchronization
+— every frame after it.
+
 Public and private state are separate:
 
 - `GAME_STATE` describes the table and public hand counts
