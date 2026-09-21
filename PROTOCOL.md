@@ -246,7 +246,8 @@ Offset  Size  Field           Description
 20      8     ReconnectToken  Stable token for reclaiming a slot (0 = none)
 28      8     RoomCode        Optional ASCII room code, null-padded
 36      1     Capabilities    Bit 0: SYNC_REQUEST acknowledgement extension
-37      11    Reserved        Zero-filled
+37      3     Look            Chosen portrait, 3 bytes; all zero = none (see Portrait Look)
+40      8     Reserved        Zero-filled
 ```
 
 The HELLO header `GameID` is `0` for a fresh join and the active game ID when reclaiming a disconnected slot.
@@ -545,7 +546,7 @@ PlayerInfo structure (6 bytes):
   Offset  Size  Field       Description
   0       1     PlayerID    Player index (0-7)
   1       2     PlatformID  Platform ID (big-endian)
-  3       3     Reserved    Zero-filled
+  3       3     Look        Chosen portrait, relayed as received; zero = none (see Portrait Look)
 ```
 
 ### ANNOUNCE (0x0D) — Host → Clients
@@ -874,6 +875,26 @@ This protocol has minimal security (vintage machines cannot handle crypto).
 
 ---
 
+### Portrait Look (3 bytes)
+
+HELLO bytes 37-39 and each PLAYER_LIST `PlayerInfo` entry's bytes 3-5 carry a
+player's chosen portrait, packed big-endian:
+
+```
+byte 0: P HHHHH EE   present, headwear (5 bits), eyewear high 2 bits
+byte 1: E FF SSS RR  eyewear low bit, facial hair (2), skin (3), signature high 2 bits
+byte 2: R 0000000    signature low bit; the rest is ignored on decode
+```
+
+Field ranges: headwear 0-31, eyewear 0-7, facial hair 0-3, skin 0-7,
+signature 0-7. The present bit (byte 0, bit 7) clear means no look was sent:
+all three bytes read zero, and the receiver derives a face from the name.
+Bits 6…0 of byte 2 are ignored by readers. Index meanings (which hat is 6)
+belong to the client that draws faces; a client that draws none ignores the
+field and echoes zeros.
+
+---
+
 ## Changelog
 
 ### RUBP v2 — CRC-protected transport
@@ -940,3 +961,8 @@ decides".
 The **single source of truth is the `RachelEngine` code** (`RUBPMessage`,
 `RUBPPlatformID`, `RachelSpec`). This document tracks it; the frozen `specs/`
 files pin the behaviours that must not change within v1.
+
+### 2026-09-21 — Portrait Look added to HELLO and PLAYER_LIST
+
+HELLO bytes 37-39 and PlayerInfo bytes 3-5 carry a Portrait Look (additive;
+zeros mean what the reserved bytes meant).
