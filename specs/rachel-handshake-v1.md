@@ -30,7 +30,8 @@ handshake.
 Payload capability byte assignments used by RachelSync remain backwards
 compatible because they occupy previously reserved bytes. Capability bit
 `0x01` at HELLO byte 36 is echoed at WELCOME byte 8 and PLAYER_LIST byte 47;
-see `rachel-sync-v1.md` for its acknowledgement semantics.
+see `rachel-sync-v1.md` for its acknowledgement semantics. Portrait Look bytes
+never reach byte 47, because the eighth `PlayerInfo` entry carries no Look.
 
 ## Fresh Join
 

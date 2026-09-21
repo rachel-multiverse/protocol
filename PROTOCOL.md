@@ -546,7 +546,9 @@ PlayerInfo structure (6 bytes):
   Offset  Size  Field       Description
   0       1     PlayerID    Player index (0-7)
   1       2     PlatformID  Platform ID (big-endian)
-  3       3     Look        Chosen portrait, relayed as received; zero = none (see Portrait Look)
+  3       3     Look        Chosen portrait, relayed as received; zero = none (see Portrait Look);
+                            entries 0-6 only; the eighth entry's Look would overrun the
+                            payload and is never sent
 ```
 
 ### ANNOUNCE (0x0D) — Host → Clients
@@ -890,8 +892,15 @@ Field ranges: headwear 0-31, eyewear 0-7, facial hair 0-3, skin 0-7,
 signature 0-7. The present bit (byte 0, bit 7) clear means no look was sent:
 all three bytes read zero, and the receiver derives a face from the name.
 Bits 6…0 of byte 2 are ignored by readers. Index meanings (which hat is 6)
-belong to the client that draws faces; a client that draws none ignores the
-field and echoes zeros.
+belong to the client that draws faces; a client that draws none need not
+interpret the field. A client that draws no faces must preserve the Look bytes
+when it re-encodes a message it received (the conformance vectors require
+byte-identical re-encoding); it need not interpret them.
+
+In PLAYER_LIST only the first seven `PlayerInfo` entries carry a Look. The
+eighth entry's Look bytes would land at payload bytes 46-48, one past the
+48-byte payload, so a full table sends the eighth seat no Look. This also
+leaves byte 47 free for the sync-capability echo the handshake spec reserves.
 
 ---
 
