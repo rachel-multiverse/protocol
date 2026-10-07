@@ -2,7 +2,7 @@
 import Foundation
 import RachelEngine
 
-let source = "4c022eba2dc96c3d1bf15d09ed4cca70e7c2dace"
+let source = "2dd624a8c4d394c3bc86d61316ab936fe4917c33"
 func card(_ suit: Suit, _ rank: Rank) -> Card { Card(suit: suit, rank: rank) }
 func list<T>(_ values: [T]) -> String { values.isEmpty ? "-" : values.map { String(describing: $0) }.joined(separator: ",") }
 func cards(_ values: [Card]) -> String { list(values.map(\.encoded)) }
@@ -26,6 +26,13 @@ func emit(_ id: String, _ state: GameState, _ action: GameAction) throws {
     let outcome: String
     do { after = try GameEngine.process(action: action, in: state); outcome = "ok" }
     catch let error as GameError { after = state; outcome = error.specIdentifier }
+    if id.hasPrefix("seats-") {
+        precondition(outcome == "ok", "Multiplayer action unexpectedly rejected: \(id)")
+        for snapshot in [state, after] {
+            let allCards = snapshot.deck + snapshot.discardPile + snapshot.players.flatMap(\.hand)
+            precondition(allCards.count == 52 && Set(allCards).count == 52, "Invalid deck in \(id)")
+        }
+    }
     rows.append([id, kind, played, nomination, outcome, vector(state), vector(after),
                  String(GameStateHasher.hash(state)), String(GameStateHasher.hash(after))].joined(separator: "\t"))
 }
@@ -118,6 +125,67 @@ for seed: UInt64 in [7, 42] {
         game = try GameEngine.process(action: action, in: game)
     }
     precondition(game.isGameOver, "Seeded replay failed to finish")
+}
+// Exercise turn advancement across eliminated seats in both directions,
+// including the final transition when only a nonadjacent survivor remains.
+for count in 3...8 {
+    for direction in [Direction.clockwise, .counterClockwise] {
+        let sign = direction == .clockwise ? 1 : -1
+        for rank in [Rank.nine, .two, .seven, .queen] {
+            for finish in [false, true] {
+                let effectiveSign = rank == .queen ? -sign : sign
+                let neighbor = (effectiveSign + count) % count
+                let survivor = (count - effectiveSign) % count
+                let played = card(.hearts, rank)
+                let otherRanks: [Rank] = [.three, .four, .five, .six, .eight, .nine, .ten]
+                var players = (0..<count).map { seat in
+                    Player(name: "user_\(seat)", hand: seat == 0 ? [played] + (finish ? [] : [filler]) : [card(.spades, otherRanks[seat - 1])])
+                }
+                for seat in 1..<count where finish ? seat != survivor : seat == neighbor {
+                    players[seat].hand = []
+                    players[seat].isOut = true
+                }
+                let used = Set(players.flatMap(\.hand) + [five])
+                let game = GameState(deck: Deck.standard().filter { !used.contains($0) }, discardPile: [five],
+                                     players: players, direction: direction,
+                                     finishOrder: players.filter(\.isOut).map(\.id), turnNumber: 9, randomSeed: 42)
+                try emit("seats-\(count)-direction-\(sign)-\(rank.rawValue)-\(finish ? "finish" : "advance")",
+                         game, .play(cards: [played], nominatedSuit: nil))
+            }
+        }
+        // A seven holder beyond an eliminated seat must get the chance to counter.
+        let neighbor = (sign + count) % count
+        let target = (2 * sign + count) % count
+        var players = (0..<count).map { seat in Player(name: "user_\(seat)", hand: [card(.spades, .king)]) }
+        players[0].hand = [card(.hearts, .seven), filler]
+        players[neighbor].hand = []
+        players[neighbor].isOut = true
+        players[target].hand = [card(.clubs, .seven), card(.clubs, .king)]
+        // Give other active seats distinct cards, retaining one physical deck.
+        for seat in 1..<count where seat != neighbor && seat != target {
+            let ranks: [Rank] = [.two, .three, .four, .five, .six, .seven, .eight, .nine]
+            players[seat].hand = [card(.spades, ranks[seat])]
+        }
+        let used = Set(players.flatMap(\.hand) + [five])
+        let game = GameState(deck: Deck.standard().filter { !used.contains($0) }, discardPile: [five], players: players,
+                             direction: direction, finishOrder: [players[neighbor].id], turnNumber: 9, randomSeed: 42)
+        try emit("seats-\(count)-direction-\(sign)-seven-counter-past-out", game,
+                 .play(cards: [card(.hearts, .seven)], nominatedSuit: nil))
+    }
+    for seed: UInt64 in [7, 42] {
+        var game = try GameEngine.newGame(playerNames: (0..<count).map { "user_\($0)" }, seed: seed)
+        for turn in 0..<1000 {
+            if game.isGameOver { break }
+            let action: GameAction
+            if let lead = PlayValidator.validCards(in: game).first {
+                let stack = [lead] + game.currentPlayer.hand.filter { $0 != lead && $0.rank == lead.rank }
+                action = .play(cards: stack, nominatedSuit: lead.rank == .ace ? .hearts : nil)
+            } else { action = .draw }
+            try emit("seats-\(count)-seed-\(seed)-turn-\(turn)", game, action)
+            game = try GameEngine.process(action: action, in: game)
+        }
+        precondition(game.isGameOver && game.finishOrder.count == count - 1, "Multiplayer replay failed to finish")
+    }
 }
 print("# engine-transitions-v1; RachelEngine source \(source)")
 print("# id\taction\tcards\tnomination\toutcome\tbefore\tafter\tbeforeHash\tafterHash")
