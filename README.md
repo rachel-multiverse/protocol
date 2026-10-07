@@ -52,6 +52,9 @@ copy carries a test case the others lack, and one carries a typo in a
 human-readable label. Four copies of a contract stay in agreement only for
 as long as nobody edits one.
 
+Local-engine ports can also run the [engine transition fixtures](specs/engine-transitions-v1.md).
+They compare exact post-action state with Swift without changing the host-authority rule.
+
 ## Why this is a repository of its own
 
 The specification used to live in a private repository beside internal
