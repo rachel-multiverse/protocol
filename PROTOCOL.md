@@ -679,6 +679,14 @@ No conversion needed.
 
 ## Transport Layer
 
+Default ports and serial modem commands are recorded in the
+[endpoint contract](specs/rubp-transport-v1.json).
+
+### TLS (Modern Clients)
+
+Modern clients can carry RUBP over TLS on port **443**. The connection carries
+the same fixed-size messages and begins with HELLO after the TLS handshake.
+
 ### TCP (Recommended for Vintage)
 
 - Port: 6502 (canonical raw RUBP endpoint)
