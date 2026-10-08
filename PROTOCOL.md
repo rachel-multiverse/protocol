@@ -43,10 +43,10 @@ logic; new messages should be built the same way. The host computes, the
 payload carries, the client displays.
 
 A platform **may** additionally implement the game locally in order to offer
-solo play. iOS does, which is why the app needs no network to play alone. That
-is a platform capability, not a protocol requirement: the vintage clients do
-not have it, and a vintage machine with no host on the network has no game to
-play.
+solo play. The iOS and Android apps and the C64 and VIC-20 clients have local
+solo engines. This is a platform capability, not a protocol requirement;
+network-only clients still need a compatible host. See
+[COMPLETE_CLIENT_PORT.md](COMPLETE_CLIENT_PORT.md) for local-engine requirements.
 
 ### No hot-seat
 

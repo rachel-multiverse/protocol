@@ -116,6 +116,16 @@ target binary.
 
 ## 5. Rules edge cases a port must preserve
 
+### Initial deal
+
+Use 7 cards each for 2–5 players, 6 for 6 players, and 5 for 7–8 players.
+Reserve one initial discard and at least 10 draw cards. The reference engine
+uses `min(7, floor((52 - 1 - 10) / playerCount))`; seven players therefore
+leave 16 draw cards. The first discard does not apply its special effect.
+Swift `GameSetupTests.cardsPerPlayerCalculation` and Go `TestCardsPerPlayer`
+cover these values. Do not copy the former six-card, seven-player entry from
+older rules documentation.
+
 ### Cards and action ordering
 
 - Card suit occupies bits 7–6 and rank the defined low bits; use the fixture,
