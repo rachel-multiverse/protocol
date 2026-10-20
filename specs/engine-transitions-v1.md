@@ -1,31 +1,34 @@
 # Engine transition fixtures v1
 
 `fixtures/engine-transitions-v1.tsv` checks the local rules engines against
-Swift `RachelEngine` revision `2dd624a8c4d394c3bc86d61316ab936fe4917c33`.
+Swift `RachelEngine` revision `2b54b4dc8d7649626c02b1e4ba809b1aaddb4fbb`.
 It is not a new wire format and does not require render-only clients to run
 an engine. The separate `rachel-transitions-v1.md` describes public RUBP
 checkpoints.
 
-There are 1,724 cases: 155 focused actions and 1,569 consecutive actions from
-14 complete games (seeds 7 and 42 at each table size from two through eight).
-Fourteen actions are rejected. The original 88 two-player actions are unchanged.
-Coverage includes normal play/draw, stacks, Ace nomination, attacks and
-counters, red-Jack residue, skip wraparound and counter interruption,
-reversals, exhaustion and deterministic reshuffling, finishing, duplicate
-cards, and actions after game end. Larger tables cover both directions,
-eliminated seats, attack targeting, skip-counter interruption, finishing with
-special cards and a nonadjacent survivor. Every larger-table state retains all
-52 distinct cards; each replay ends with exactly one survivor.
+There are 2,903 cases: all 1,724 established supplied-state actions, 1,173
+consecutive actions from 14 complete games under the two-card recycling rule,
+and six focused threshold cases. Fourteen actions are rejected. The original
+inputs, actions, acceptance outcomes and input hashes are retained; resulting
+states and hashes change where earlier recycling applies. The retained seeded
+inputs are independent regression cases, not continuous games under the new rule.
 
-| Seats | Actions | Seed 7 turns | Seed 42 turns |
-|-------|---------|--------------|---------------|
-| 2 | 88 | 25 | 16 |
-| 3 | 135 | 22 | 95 |
-| 4 | 201 | 75 | 108 |
-| 5 | 320 | 140 | 162 |
-| 6 | 221 | 126 | 77 |
-| 7 | 445 | 170 | 257 |
-| 8 | 314 | 106 | 190 |
+The new complete games use seeds 7 and 42 at each table size from two through
+eight. Their IDs begin `two-card-`; each transition feeds the next input, retains
+all 52 distinct cards and ends with exactly one survivor. Focused cases cover
+stock sizes zero through four and a play that supplies a recyclable discard.
+Coverage also includes stacks, Ace nomination, attacks and counters, red-Jack
+residue, skips, reversals, finishing, duplicate cards and actions after game end.
+
+| Seats | Total cases | New seed 7 turns | New seed 42 turns |
+|-------|-------------|------------------|-------------------|
+| 2 | 135 | 25 | 16 |
+| 3 | 224 | 22 | 67 |
+| 4 | 344 | 79 | 64 |
+| 5 | 485 | 98 | 67 |
+| 6 | 463 | 104 | 138 |
+| 7 | 631 | 119 | 67 |
+| 8 | 621 | 175 | 132 |
 
 These fixtures check play/draw transitions from supplied states, not each
 engine's new-game dealing or AI. Kotlin's shipped solo setup remains two-player.
@@ -81,12 +84,16 @@ swiftc \
   tools/ExportEngineTransitions.swift \
   ../rachel-ios/.build/out/Products/Debug/libRachelEngine.a \
   -o /tmp/rachel-export-engine-transitions
-/tmp/rachel-export-engine-transitions > /tmp/engine-transitions-v1.tsv
+RACHEL_ENGINE_REFERENCE=2b54b4dc8d7649626c02b1e4ba809b1aaddb4fbb \
+  /tmp/rachel-export-engine-transitions > /tmp/engine-transitions-v1.tsv
 diff -u specs/fixtures/engine-transitions-v1.tsv /tmp/engine-transitions-v1.tsv
 ```
 
 Run each command successfully before trusting the following comparison. The
-exporter fails if any seeded game does not finish. Keep the provenance
+exporter reads the established inputs from the canonical file (or its first
+argument), rejects a missing or duplicate baseline, and fails if any newly
+seeded game does not finish. Regeneration preserves the retained inputs and
+replaces the appended runs, so repeated generation must be byte-identical. Keep the provenance
 revision synchronized with the engine actually used to generate expectations;
 review changes against the rules rather than regenerating to silence a test.
 
