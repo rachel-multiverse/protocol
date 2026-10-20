@@ -2,7 +2,7 @@
 import Foundation
 import RachelEngine
 
-let source = "2dd624a8c4d394c3bc86d61316ab936fe4917c33"
+let source = ProcessInfo.processInfo.environment["RACHEL_ENGINE_REFERENCE"] ?? "2b54b4dc8d7649626c02b1e4ba809b1aaddb4fbb"
 func card(_ suit: Suit, _ rank: Rank) -> Card { Card(suit: suit, rank: rank) }
 func list<T>(_ values: [T]) -> String { values.isEmpty ? "-" : values.map { String(describing: $0) }.joined(separator: ",") }
 func cards(_ values: [Card]) -> String { list(values.map(\.encoded)) }
@@ -185,6 +185,76 @@ for count in 3...8 {
             game = try GameEngine.process(action: action, in: game)
         }
         precondition(game.isGameOver && game.finishOrder.count == count - 1, "Multiplayer replay failed to finish")
+    }
+}
+// Retain every established input/action. Earlier recycling changes seeded
+// paths, but must not silently remove the old states from regression coverage.
+enum RetainedInputError: Error { case invalidValue }
+func required<T>(_ value: T?) throws -> T {
+    guard let value else { throw RetainedInputError.invalidValue }
+    return value
+}
+func numbers(_ text: String) throws -> [Int] {
+    try text == "-" ? [] : text.split(separator: ",").map { try required(Int($0)) }
+}
+func parseCards(_ text: String) throws -> [Card] {
+    try numbers(text).map { try required(Card(encoded: required(UInt8(exactly: $0)))) }
+}
+func parseSuit(_ text: String) throws -> Suit? {
+    try text == "-1" ? nil : required(Suit(rawValue: required(UInt8(text))))
+}
+func parseState(_ text: String) throws -> GameState {
+    let f = text.components(separatedBy: ";")
+    precondition(f.count == 13)
+    let hands = try f[2].components(separatedBy: "/").map(parseCards)
+    let out = try numbers(f[8])
+    precondition(hands.count == out.count && (2...8).contains(hands.count))
+    let attacks: [Attack] = try f[12] == "-" ? [] : f[12].split(separator: ",").map { entry in
+        let values = try entry.split(separator: ":").map { try required(Int($0)) }
+        precondition(values.count == 4)
+        return Attack(attackerIndex: values[0], targetIndex: values[1], severity: values[2], turn: values[3])
+    }
+    return try StateSnapshot(
+        deck: parseCards(f[0]), discardPile: parseCards(f[1]),
+        players: hands.enumerated().map { .init(hand: $0.element, isAI: false, isOut: out[$0.offset] == 1) },
+        currentPlayerIndex: required(Int(f[3])), direction: f[4] == "1" ? .clockwise : .counterClockwise,
+        pendingDraws: required(Int(f[5])), pendingSkips: required(Int(f[6])), nominatedSuit: parseSuit(f[7]),
+        finishOrder: numbers(f[9]), attackHistory: attacks, turnNumber: required(Int(f[10])), randomSeed: required(UInt64(f[11]))
+    ).makeState()
+}
+for stock in 0...4 {
+    var low = state(five, [card(.clubs, .three)])
+    low.discardPile = Array(low.deck.dropFirst(stock)) + low.discardPile
+    low.deck = Array(low.deck.prefix(stock))
+    try emit("two-card-threshold-\(stock)", low, .draw)
+}
+var laterPlay = state(five, [card(.hearts, .nine), card(.clubs, .three)])
+laterPlay.players[1].hand += laterPlay.deck.dropFirst(2)
+laterPlay.deck = Array(laterPlay.deck.prefix(2))
+try emit("two-card-play-supplies-discards", laterPlay, .play(cards: [card(.hearts, .nine)], nominatedSuit: nil))
+let currentRows = rows
+rows = []
+let retainedPath = CommandLine.arguments.dropFirst().first ?? "specs/fixtures/engine-transitions-v1.tsv"
+let retained = try String(contentsOfFile: retainedPath, encoding: .utf8).split(separator: "\n")
+    .filter { !$0.hasPrefix("#") }.map { $0.components(separatedBy: "\t") }
+    .filter { !$0[0].hasPrefix("two-card-") }
+precondition(retained.count == 1724 && Set(retained.map { $0[0] }).count == 1724, "Missing retained fixture inputs")
+for row in retained {
+    precondition(row.count == 9)
+    let before = try parseState(row[5])
+    precondition(GameStateHasher.hash(before) == UInt64(row[7]), "Changed retained input hash: \(row[0])")
+    let action: GameAction = try row[1] == "draw" ? .draw : .play(cards: parseCards(row[2]), nominatedSuit: parseSuit(row[3]))
+    try emit(row[0], before, action)
+    precondition(rows.last?.components(separatedBy: "\t")[4] == row[4], "Changed retained acceptance: \(row[0])")
+}
+for row in currentRows {
+    var fields = row.components(separatedBy: "\t")
+    let id = fields[0]
+    if id.hasPrefix("two-card-") {
+        rows.append(row)
+    } else if id.hasPrefix("seed-") || (id.hasPrefix("seats-") && id.contains("-seed-")) {
+        fields[0] = "two-card-" + id
+        rows.append(fields.joined(separator: "\t"))
     }
 }
 print("# engine-transitions-v1; RachelEngine source \(source)")
