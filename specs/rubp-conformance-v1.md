@@ -64,8 +64,15 @@ only useful if it stays frozen.
 
 ## Coverage
 
-`hello`, `welcome`, `play_card`, `draw_card`, `game_state`, `turn_start`,
-`turn_end`, `player_won`, `hand_sync`, `sync_request`.
+`hello`, `hello_with_look`, `hello_with_hair`,
+`hello_with_hair_colour_but_no_style`, `welcome`, `play_card`, `draw_card`,
+`game_state`, `turn_start`, `turn_end`, `player_won`,
+`player_won_attack_totals`, `hand_sync`, `sync_request`,
+`player_list_with_look`, `player_list_with_hair`.
+
+`hello_with_hair_colour_but_no_style` has hair colour bits set with hair style
+0. A client that draws faces must draw it with no hair; every client must
+re-encode it byte for byte.
 
 `heartbeat` (0x00) carries an all-zero payload and is exercised by the reference
 round-trip tests rather than a golden vector; its encoding is simply the 16-byte
