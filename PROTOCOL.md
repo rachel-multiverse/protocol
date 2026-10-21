@@ -893,17 +893,25 @@ player's chosen portrait, packed big-endian:
 ```
 byte 0: P HHHHH EE   present, headwear (5 bits), eyewear high 2 bits
 byte 1: E FF SSS RR  eyewear low bit, facial hair (2), skin (3), signature high 2 bits
-byte 2: R 0000000    signature low bit; the rest is ignored on decode
+byte 2: R SSSS CCC   signature low bit, hair style (4 bits), hair colour (3 bits)
 ```
 
 Field ranges: headwear 0-31, eyewear 0-7, facial hair 0-3, skin 0-7,
-signature 0-7. The present bit (byte 0, bit 7) clear means no look was sent:
-all three bytes read zero, and the receiver derives a face from the name.
-Bits 6…0 of byte 2 are ignored by readers. Index meanings (which hat is 6)
-belong to the client that draws faces; a client that draws none need not
-interpret the field. A client that draws no faces must preserve the Look bytes
-when it re-encodes a message it received (the conformance vectors require
-byte-identical re-encoding); it need not interpret them.
+signature 0-7, hair style 0-15, hair colour 0-7. The present bit (byte 0,
+bit 7) clear means no look was sent: all three bytes read zero, and the
+receiver derives a face from the name.
+
+Hair style 0 means no hair. A reader must not read the hair colour when the
+style is 0, whatever its bits hold. Looks sent before hair existed have byte
+2's low seven bits clear, so they read as no hair and otherwise decode as
+they always did. Hair is drawn under any headwear; the client decides where
+each hat cuts it off.
+
+Index meanings (which hat is 6) belong to the client that draws faces; a
+client that draws none need not interpret the field. A client that draws no
+faces must preserve the Look bytes when it re-encodes a message it received
+(the conformance vectors require byte-identical re-encoding); it need not
+interpret them.
 
 In PLAYER_LIST only the first seven `PlayerInfo` entries carry a Look. The
 eighth entry's Look bytes would land at payload bytes 46-48, one past the
@@ -983,3 +991,11 @@ files pin the behaviours that must not change within v1.
 
 HELLO bytes 37-39 and PlayerInfo bytes 3-5 carry a Portrait Look (additive;
 zeros mean what the reserved bytes meant).
+
+### 2026-10-21 — Hair in the Portrait Look
+
+Byte 2's low seven bits, which readers ignored, now carry hair style (4 bits)
+and hair colour (3 bits). Additive: no message changes size or position, and
+older looks read as no hair. Three conformance vectors added:
+`hello_with_hair`, `hello_with_hair_colour_but_no_style` and
+`player_list_with_hair`.
