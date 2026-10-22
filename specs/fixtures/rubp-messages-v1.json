@@ -336,7 +336,7 @@
       "name": "turn_start_away",
       "type": "TURN_START",
       "type_code": "0x08",
-      "summary": "An away seat's turn: the 5-second grace before the host moves for it",
+      "summary": "An away seat's turn, carrying its grace before the host moves for it",
       "fields": {
         "playerIndex": "1",
         "turnNumber": "2",
