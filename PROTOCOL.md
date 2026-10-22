@@ -460,7 +460,8 @@ Offset  Size  Field             Description
 Turn Timer). The host owns the clock: it starts when the host begins the
 turn, and when it runs out the host makes the move. `TimeLimit` lets a
 client show a countdown from when it receives TURN_START; a client never
-decides a timeout. An away seat's turn carries its grace, 5 seconds.
+decides a timeout. An away seat's turn carries its grace: the table's limit,
+at least 30 and at most 60 seconds.
 Older hosts send 0: no limit.
 
 ### TURN_END (0x09) — Host → Clients
