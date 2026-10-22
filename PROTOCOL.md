@@ -426,7 +426,8 @@ Offset  Size  Field             Description
 32      1     DiscardCount      Cards currently in discard pile
 33      1     PlayerOutMask     Bitmask of players marked out
 34      8     FinishOrder       Finishing player indexes (0xFF = unused)
-42      6     Reserved          Zero-filled
+42      1     AwayMask          Bit n set when seat n is away (see Turn Timer); not in StateHash
+43      5     Reserved          Zero-filled
 ```
 
 `StateHash` is the deterministic RachelSpec hash of the rules state only.
@@ -451,8 +452,16 @@ Offset  Size  Field             Description
 7       1     Flags             Bit 0 = StateHash present
 8       2     SpecVersion       RachelSpec version for this state
 10      8     StateHash         64-bit RachelSpec rules-only state hash
-18      30    Reserved          Zero-filled
+18      2     TimeLimit         Whole seconds this turn allows (big-endian); 0 = no limit
+20      28    Reserved          Zero-filled
 ```
+
+**Turn Timer.** A host may give each turn a time limit (`GAME_RULES.md` §
+Turn Timer). The host owns the clock: it starts when the host begins the
+turn, and when it runs out the host makes the move. `TimeLimit` lets a
+client show a countdown from when it receives TURN_START; a client never
+decides a timeout. An away seat's turn carries its grace, 5 seconds.
+Older hosts send 0: no limit.
 
 ### TURN_END (0x09) — Host → Clients
 
@@ -999,3 +1008,10 @@ and hair colour (3 bits). Additive: no message changes size or position, and
 older looks read as no hair. Three conformance vectors added:
 `hello_with_hair`, `hello_with_hair_colour_but_no_style` and
 `player_list_with_hair`.
+
+### 2026-10-22 — Turn time limit and away seats
+
+TURN_START bytes 18-19 carry the turn's time limit in seconds and
+GAME_STATE byte 42 a bit per away seat. Additive: both were reserved and
+zero, and zero means no limit and nobody away. Three vectors added:
+`turn_start_with_time_limit`, `turn_start_away` and `game_state_with_away`.

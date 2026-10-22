@@ -312,6 +312,79 @@
         "gameID": "0x0042"
       },
       "hex": "52414348010c0030ffff004200000000030000319aced6010031c095310200020000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "turn_start_with_time_limit",
+      "type": "TURN_START",
+      "type_code": "0x08",
+      "summary": "Next active turn, with a 60-second limit",
+      "fields": {
+        "playerIndex": "1",
+        "turnNumber": "2",
+        "pendingDraws": "4",
+        "pendingSkips": "1",
+        "specVersion": "0x0001",
+        "stateHash": "0x0102030405060708",
+        "sequence": "0x0028",
+        "playerID": "0xFFFF",
+        "gameID": "0x0042",
+        "timeLimit": "60 seconds (0x003C)"
+      },
+      "hex": "5241434801080028ffff004200000000010000000204010100010102030405060708003c00000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "turn_start_away",
+      "type": "TURN_START",
+      "type_code": "0x08",
+      "summary": "An away seat's turn: the 5-second grace before the host moves for it",
+      "fields": {
+        "playerIndex": "1",
+        "turnNumber": "2",
+        "pendingDraws": "4",
+        "pendingSkips": "1",
+        "specVersion": "0x0001",
+        "stateHash": "0x0102030405060708",
+        "sequence": "0x0028",
+        "playerID": "0xFFFF",
+        "gameID": "0x0042",
+        "timeLimit": "5 seconds (0x0005)"
+      },
+      "hex": "5241434801080028ffff004200000000010000000204010100010102030405060708000500000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "game_state_with_away",
+      "type": "GAME_STATE",
+      "type_code": "0x07",
+      "summary": "Public game state with seats 0 and 2 away",
+      "fields": {
+        "currentPlayerIndex": "1",
+        "direction": "1 (counter-clockwise)",
+        "topCard": "J♦ (0x4B)",
+        "nominatedSuit": "0x02 (clubs)",
+        "pendingDraws": "4",
+        "pendingSkips": "1",
+        "deckCount": "12",
+        "discardCount": "3",
+        "playerCardCounts": [
+          5,
+          1,
+          0
+        ],
+        "playerOutMask": "0x04",
+        "finishOrder": [
+          2
+        ],
+        "isGameOver": false,
+        "winnerIndex": "0xFF (none)",
+        "turnNumber": "7",
+        "specVersion": "0x0001",
+        "stateHash": "0xABCDEF0123456789",
+        "sequence": "0x0024",
+        "playerID": "0xFFFF",
+        "gameID": "0x0042",
+        "awayMask": "0b00000101 (seats 0 and 2)"
+      },
+      "hex": "5241434801070024ffff00420000000001014b0204010c050100000000000000ff00000007000103abcdef0123456789030402ffffffffffffff050000000000"
     }
   ]
 }
