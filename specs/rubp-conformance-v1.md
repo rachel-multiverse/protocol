@@ -68,7 +68,8 @@ only useful if it stays frozen.
 `hello_with_hair_colour_but_no_style`, `welcome`, `play_card`, `draw_card`,
 `game_state`, `turn_start`, `turn_end`, `player_won`,
 `player_won_attack_totals`, `hand_sync`, `sync_request`,
-`player_list_with_look`, `player_list_with_hair`.
+`player_list_with_look`, `player_list_with_hair`, `turn_start_with_time_limit`,
+`turn_start_away`, `game_state_with_away`.
 
 `hello_with_hair_colour_but_no_style` has hair colour bits set with hair style
 0. A client that draws faces must draw it with no hair; every client must
